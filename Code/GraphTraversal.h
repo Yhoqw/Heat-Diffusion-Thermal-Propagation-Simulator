@@ -1,5 +1,6 @@
 #pragma once
-#include "Grid.h"
+
+class Grid; // Forward declaration
 
 class GraphTraversal {
 public:

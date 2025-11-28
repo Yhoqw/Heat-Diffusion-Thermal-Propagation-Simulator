@@ -15,7 +15,10 @@ private:
 
 public:
     LinkedList();
+    ~LinkedList();
     void addSource(HeatSource src);
     void removeSource(int x, int y);
-    void display();
+    void display() const;
+    Node* getHead() const;
+    int getCount() const;
 };

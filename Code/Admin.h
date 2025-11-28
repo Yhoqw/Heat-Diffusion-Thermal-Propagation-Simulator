@@ -9,7 +9,13 @@ private:
     LinkedList& sources;
 
 public:
-    Admin(Grid& g, LinkedList& s);
+    Admin(Grid& g, LinkedList& s, const std::string& name = "admin", const std::string& pass = "admin123");
     void addHeatSource();
-    void viewHeatmap() override;
+    void removeHeatSource();
+    void viewHeatmap(const Grid& grid) override;
+    void viewHeatSources() const;
+    void initializeGrid(double tempValue);
+    void simulateHeatDiffusion();
+    void displayStats() const;
+    void displayMenu() override;
 };
