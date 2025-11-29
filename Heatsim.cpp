@@ -282,6 +282,7 @@ public:
     int get_cols() const { return cols; }
 };
 
+//Sorting Algorithms
 void selectionSort(std::vector<float>& arr) {
     int n = arr.size();
     for (int i = 0; i < n - 1; i++) {
@@ -366,6 +367,100 @@ void quickSort(std::vector<float>& arr, int low, int high) {
     }
 }
 
+// Trees
+struct BSTNode {
+    float temp;
+    BSTNode* left;
+    BSTNode* right;
+
+    BSTNode(float t) : temp(t), left(nullptr), right(nullptr) {}
+};
+
+class TemperatureBST {
+private:
+    BSTNode* root;
+
+    BSTNode* insert(BSTNode* node, float temp) {
+        if (node == nullptr)
+            return new BSTNode(temp);
+
+        if (temp < node->temp)
+            node->left = insert(node->left, temp);
+        else
+            node->right = insert(node->right, temp);
+
+        return node;
+    }
+
+    bool search(BSTNode* node, float temp) {
+        if (!node) return false;
+        if (node->temp == temp) return true;
+        if (temp < node->temp) return search(node->left, temp);
+        return search(node->right, temp);
+    }
+
+    void inorder(BSTNode* node, std::vector<float>& list) {
+        if (!node) return;
+        inorder(node->left, list);
+        list.push_back(node->temp);
+        inorder(node->right, list);
+    }
+
+    float findMin(BSTNode* node) {
+        while (node->left)
+            node = node->left;
+        return node->temp;
+    }
+
+    float findMax(BSTNode* node) {
+        while (node->right)
+            node = node->right;
+        return node->temp;
+    }
+
+public:
+    TemperatureBST() : root(nullptr) {}
+
+    void insert(float temp) {
+        root = insert(root, temp);
+    }
+
+    bool search(float temp) {
+        return search(root, temp);
+    }
+
+    float getMin() {
+        if (!root) return 0.0f;
+        return findMin(root);
+    }
+
+    float getMax() {
+        if (!root) return 0.0f;
+        return findMax(root);
+    }
+
+    std::vector<float> getSortedList() {
+        std::vector<float> list;
+        inorder(root, list);
+        return list;
+    }
+
+    void clear() {
+        root = nullptr;  // no full delete for simplicity
+    }
+};
+
+void updateBST(const Grid& grid, TemperatureBST& bst) {
+    bst.clear();
+
+    for (int y = 0; y < grid.get_rows(); y++) {
+        for (int x = 0; x < grid.get_cols(); x++) {
+            bst.insert(grid.get_temperature(x, y));
+        }
+    }
+}
+
+
 // Convert temperature to color (hot colormap)
 Color temperature_to_color(float temp) {
     // Clamp temperature to 0-100 range
@@ -406,6 +501,7 @@ int main() {
     SetTargetFPS(60);
 
     Grid grid(GRID_ROWS, GRID_COLS, 0.3f, 0.999f);
+    TemperatureBST bst;
 
     // Pre-add an example source
     // grid.sources.add_source(4, 4, 100.0f);
@@ -444,6 +540,7 @@ int main() {
 
         // Update simulation
         grid.step();
+        updateBST(grid, bst);
 
         // Draw
         BeginDrawing();
@@ -465,6 +562,12 @@ int main() {
                               CELL_SIZE - 1, CELL_SIZE - 1, color);
             }
         }
+
+        float minTemp = bst.getMin();
+        float maxTemp = bst.getMax();
+
+        DrawText(TextFormat("Min: %.2f", minTemp), 10, SCREEN_HEIGHT - 80, 20, LIGHTGRAY);
+        DrawText(TextFormat("Max: %.2f", maxTemp), 200, SCREEN_HEIGHT - 80, 20, LIGHTGRAY);        
 
         // Draw heat source markers (outline small white rectangle)
         grid.sources.for_each([&](const HeatSource* s){
