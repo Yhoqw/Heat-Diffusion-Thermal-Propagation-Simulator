@@ -4,7 +4,7 @@
 #else
     #include "C:\\raylib\\raylib\\src\\raylib.h"
 #endif
-//---------------------------------------------------------------------------------------------------
+//---|g++ -o Heatsim.exe Heatsim.cpp -I. -IC:\raylib\raylib\src -LC:\raylib\raylib\src -lraylib -lopengl32 -lgdi32 -lwinmm|---
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -132,7 +132,7 @@ public:
     SimulationMode mode = MODE_NORMAL;
     HeatSourceList sources;
 
-    Grid(int r, int c, float a = 0.1f, float cool = 0.9f) : rows(r), cols(c), alpha(a), cooling(cool) {
+    Grid(int r, int c, float a = 0.1f, float cool = 0.7f) : rows(r), cols(c), alpha(a), cooling(cool) {
         grid.resize(rows, std::vector<float>(cols, 0.0f));
     }
 
