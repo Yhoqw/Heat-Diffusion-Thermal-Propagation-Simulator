@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://cb2otkvwhyjqb"]
+
+[ext_resource type="Script" uid="uid://d4cf515guorj2" path="res://Enemy.cs" id="1_4gyqm"]
+[ext_resource type="Texture2D" uid="uid://b5ndrcycqit7t" path="res://Assets/20260214_1417_Image Generation_remix_01khdpz558fbtrj54frq2ray8p.png" id="2_4gyqm"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4gyqm"]
+radius = 48.010414
+
+[sub_resource type="Gradient" id="Gradient_e80uo"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_4gyqm"]
+gradient = SubResource("Gradient_e80uo")
+
+[sub_resource type="Gradient" id="Gradient_cxr5p"]
+colors = PackedColorArray(0.7372549, 0, 0.14117648, 1, 0.8007309, 0, 0.15404665, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_qi2p4"]
+gradient = SubResource("Gradient_cxr5p")
+
+[node name="Enemy" type="CharacterBody2D" unique_id=1921427929]
+script = ExtResource("1_4gyqm")
+DetectionRadius = 300.0
+AttackRange = 400.0
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1789335867]
+scale = Vector2(0.15780635, 0.13073735)
+texture = ExtResource("2_4gyqm")
+
+[node name="RayCast2D" type="RayCast2D" parent="Sprite2D" unique_id=1111286830]
+scale = Vector2(6.33688, 7.6489234)
+target_position = Vector2(0, 700)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=992651870]
+visible = false
+position = Vector2(-2, -8)
+shape = SubResource("CircleShape2D_4gyqm")
+
+[node name="Health_Bar" type="Sprite2D" parent="." unique_id=1181779908]
+position = Vector2(-2.3841858e-07, 77)
+scale = Vector2(0.3635547, 11.249997)
+texture = SubResource("GradientTexture1D_4gyqm")
+metadata/_edit_group_ = true
+
+[node name="Fill" type="Sprite2D" parent="Health_Bar" unique_id=334575001]
+position = Vector2(-122.48062, -0.325)
+scale = Vector2(3.8759687, 0.009374999)
+texture = SubResource("GradientTexture2D_qi2p4")
+centered = false

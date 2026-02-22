@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://c0p8aqyscl87q"]
+
+[ext_resource type="Script" uid="uid://b72nenap3rydg" path="res://Player.cs" id="1_kpjcp"]
+[ext_resource type="Script" uid="uid://ddgecf8qx5usr" path="res://PlayerCamera.cs" id="2_cxr5p"]
+[ext_resource type="Texture2D" uid="uid://di5iga75kik0m" path="res://Assets/20260214_0323_Image Generation_remix_01khchh9r3e46snn8t0qtx9zf1.png" id="2_kpjcp"]
+[ext_resource type="Texture2D" uid="uid://db66d1wonw8o0" path="res://Assets/20260214_1639_Image Generation_remix_01khdz3k2vfvjt718zh22aa5bw (1).png" id="3_e80uo"]
+[ext_resource type="Texture2D" uid="uid://dsgs4gkeg8btf" path="res://Assets/20260214_1231_Image Generation_remix_01khdgxba0eyjvxxa1trxbpvb1.png" id="3_kne1u"]
+
+[sub_resource type="Gradient" id="Gradient_e80uo"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_cxr5p"]
+gradient = SubResource("Gradient_e80uo")
+
+[sub_resource type="Gradient" id="Gradient_cxr5p"]
+colors = PackedColorArray(0.7372549, 0, 0.14117648, 1, 0.8007309, 0, 0.15404665, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tdg3f"]
+gradient = SubResource("Gradient_cxr5p")
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_cxr5p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_e80uo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_kne1u")
+}],
+"loop": true,
+"name": &"Flash",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_kne1u")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_kne1u"]
+radius = 40.311287
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_lpgew"]
+radius = 63.126858
+
+[node name="Player" type="CharacterBody2D" unique_id=232785089 groups=["player"]]
+script = ExtResource("1_kpjcp")
+
+[node name="PlayerCamera" type="Camera2D" parent="." unique_id=1338843501]
+ignore_rotation = false
+zoom = Vector2(0.7, 0.7)
+limit_enabled = false
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
+script = ExtResource("2_cxr5p")
+
+[node name="Health_Bar" type="Sprite2D" parent="." unique_id=1230467334]
+position = Vector2(-1.5349987, 101.375)
+scale = Vector2(0.3557422, 11.249991)
+texture = SubResource("GradientTexture1D_cxr5p")
+metadata/_edit_group_ = true
+
+[node name="Fill" type="Sprite2D" parent="Health_Bar" unique_id=437114875]
+position = Vector2(-122.48062, -0.325)
+scale = Vector2(3.8759687, 0.009374999)
+texture = SubResource("GradientTexture2D_tdg3f")
+centered = false
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1537830419]
+position = Vector2(-2, 10)
+scale = Vector2(0.156982, 0.129232)
+texture = ExtResource("2_kpjcp")
+
+[node name="WeaponSprite" type="AnimatedSprite2D" parent="Sprite2D" unique_id=717216220]
+position = Vector2(-57.331417, 247.6167)
+rotation = 1.5707964
+scale = Vector2(0.79722774, 0.64411783)
+sprite_frames = SubResource("SpriteFrames_cxr5p")
+
+[node name="Muzzle" type="Marker2D" parent="Sprite2D" unique_id=186249030]
+position = Vector2(0, 619.0417)
+scale = Vector2(6.3701572, 7.738022)
+
+[node name="RayCast2D" type="RayCast2D" parent="Sprite2D" unique_id=1675386260]
+scale = Vector2(6.3701572, 7.738022)
+target_position = Vector2(0, 700)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1996200575]
+visible = false
+position = Vector2(-4, -2)
+shape = SubResource("CircleShape2D_kne1u")
+
+[node name="PickupArea" type="Area2D" parent="." unique_id=2045389736]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupArea" unique_id=396185468]
+position = Vector2(-4, 1)
+shape = SubResource("CircleShape2D_lpgew")
+
+[connection signal="area_entered" from="PickupArea" to="." method="_on_pickup_area_area_entered"]

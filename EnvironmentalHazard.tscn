@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://uco2au88ubte"]
+
+[ext_resource type="Script" uid="uid://doxj7xm4fth1d" path="res://EnvironmentalHazard.cs" id="1_ptkd3"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_h60gm"]
+radius = 24.839485
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ptkd3"]
+resource_local_to_scene = true
+radius = 388.4173
+
+[node name="EnvironmentalHazard" type="StaticBody2D" unique_id=466517379]
+script = ExtResource("1_ptkd3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=232606306]
+shape = SubResource("CircleShape2D_h60gm")
+
+[node name="TemperatureZone" type="Area2D" parent="." unique_id=1535478224]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TemperatureZone" unique_id=1683480511]
+shape = SubResource("CircleShape2D_ptkd3")
+disabled = true
