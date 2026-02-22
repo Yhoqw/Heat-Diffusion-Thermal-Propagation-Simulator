@@ -144,10 +144,7 @@ Clear-and-rebuild operations each frame
 ## HOW TO BUILD:-
 Example compilation command (Windows + Raylib):
 ``` 
-g++ -o Heatsim.exe Heatsim.cpp Grid.cpp HeatSourceList.cpp \
-Sorting_Algorithms.cpp TemperatureBST.cpp \
--I. -IC:\raylib\raylib\src -LC:\raylib\raylib\src \
--lraylib -lopengl32 -lgdi32 -lwinmm
+g++ -o Heatsim.exe Heatsim.cpp Grid.cpp HeatSourceList.cpp \ Sorting_Algorithms.cpp TemperatureBST.cpp \-I. -IC:\raylib\raylib\src -LC:\raylib\raylib\src \-lraylib -lopengl32 -lgdi32 -lwinmm
 ```
 
 ## FUTURE IMPROVEMENTS:-
