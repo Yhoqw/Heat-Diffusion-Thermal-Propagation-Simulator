@@ -3,15 +3,15 @@ using System;
 
 public partial class HeatGrid : Node2D
 {
-    [Export] public int GridWidth = 32;
+    [Export] public int GridWidth  = 32;
     [Export] public int GridHeight = 32;
-    [Export] public int CellSize = 32;
+    [Export] public int CellSize   = 32;
 
-    [Export] public int DiffusionShift = 2;   // 1 = fast, 2 = medium, 3 = slow
-    [Export] public int CoolingPerTick = 1;   // temperature decay per update
+    [Export] public int DiffusionShift   = 2;     // 1 = fast, 2 = medium, 3 = slow
+    [Export] public int CoolingPerTick   = 1;     // temperature decay per update
     [Export] public float UpdateInterval = 0.07f;
 
-    // Grids
+    // Grids    
     private int[,] _grid;
     private int[,] _buffer;
 
@@ -39,7 +39,7 @@ public partial class HeatGrid : Node2D
         int centerX = GridWidth / 2;
         int centerY = GridHeight / 2;
 
-        _grid[centerX, centerY] = 80;
+        _grid[centerX, centerY]     = 80;
         _grid[centerX + 1, centerY] = 60;
         _grid[centerX - 1, centerY] = 60;
         _grid[centerX, centerY + 1] = 60;
@@ -55,7 +55,7 @@ public partial class HeatGrid : Node2D
 
     private void InitializeGrid()
     {
-        _grid = new int[GridWidth, GridHeight];
+        _grid   = new int[GridWidth, GridHeight];
         _buffer = new int[GridWidth, GridHeight];
     }
 
@@ -83,7 +83,7 @@ public partial class HeatGrid : Node2D
     /// </summary>
     private void StepSimulation()
     {
-        int width = _grid.GetLength(0);
+        int width  = _grid.GetLength(0);
         int height = _grid.GetLength(1);
 
         // Clear the buffer
@@ -101,7 +101,7 @@ public partial class HeatGrid : Node2D
                 }
 
                 // Diffusion for interior cells
-                int t = _grid[x, y];
+                int t   = _grid[x, y];
                 int avg = (_grid[x - 1, y] + _grid[x + 1, y] + _grid[x, y - 1] + _grid[x, y + 1]) >> 2;
 
                 int diffused = t + ((avg - t) >> DiffusionShift);
@@ -185,8 +185,8 @@ public partial class HeatGrid : Node2D
     public int GetTemperatureAtWorldPos(Vector2 worldPos)
     {
         Vector2 local = ToLocal(worldPos);
-        int x = (int)(local.X / CellSize);
-        int y = (int)(local.Y / CellSize);
+        int x         = (int)(local.X / CellSize);
+        int y         = (int)(local.Y / CellSize);
 
         return IsInBounds(x, y) ? _grid[x, y] : 0;
     }

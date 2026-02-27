@@ -1,8 +1,16 @@
 using Godot;
+using Godot.NativeInterop;
 using System;
 
 public partial class Enemy : CharacterBody2D
 {
+    /// <summary>
+    ///       Enemy State Machine: Patrol, Chase, Attack, Dead
+    ///       - Patrol: Moves between two points. If player is detected, switch to Chase state.
+    ///       - Chase: Chases Player. If player is within attack range and line of sight, switch to Attack state. If player is lost, switch back to Patrol.
+    ///       - Attack: Fires bursts at player. If player moves out of range or line of sight, switch back to Chase.
+    ///       - Dead: Enemy is dead, stop all movement and interactions, play death animation, then remove from scene.
+    /// </summary>
     private enum State
     {
         Patrol,
@@ -12,17 +20,17 @@ public partial class Enemy : CharacterBody2D
     }
 
     // Export Variables
-    [Export] public float Speed = 150f;
-    [Export] public float ChaseSpeed = 220f;
+    [Export] public float Speed           = 150f;
+    [Export] public float ChaseSpeed      = 220f;
     [Export] public float DetectionRadius = 200f;
-    [Export] public int MaxHealth = 30;
+    [Export] public int MaxHealth         = 30;
 
-    [Export] public float AttackRange = 300f;
-    [Export] public float FireRate = 0.2f;
-    [Export] public int BurstCount = 3;
-    [Export] public float ReloadTime = 1.2f;
-    [Export] public float WindUpTime = 0.4f;
-    [Export] public int Damage = 10;
+    [Export] public float AttackRange      = 300f;
+    [Export] public float FireRate         = 0.2f;
+    [Export] public int BurstCount         = 3;
+    [Export] public float ReloadTime       = 1.2f;
+    [Export] public float WindUpTime       = 0.4f;
+    [Export] public int Damage             = 10;
     [Export] public float MaxShootDistance = 800f;
 
     [Export] public float RotationSpeed = 8f;
@@ -36,15 +44,20 @@ public partial class Enemy : CharacterBody2D
     private Vector2 _patrolPointB;
     private Vector2 _currentTarget;
     private Sprite2D _healthBarFill;
+    private Sprite2D _sprite;
 
     private float _fireCooldown = 0f;
-    private float _reloadTimer = 0f;
-    private float _windupTimer = 0f;
+    private float _reloadTimer  = 0f;
+    private float _windupTimer  = 0f;
+    private bool _isWindingUp   = false;
     private int _shotsRemaining;
-    private bool _isWindingUp = false;
 
-    private Sprite2D _sprite;
-    private const float SPRITE_ROTATION_OFFSET = -89.6f;
+    private const float _spriteRotationOffset  = -89.6f;
+    private const float _patrolSwitchThreshold = 10f;
+    private const float _healthBarHeight       = 0.01f;
+    private const float _damageFlashDuration   = 0.2f;
+    private const float _detectionModifier    = 1.5f;
+
 
     public override void _Ready()
     {
@@ -55,8 +68,8 @@ public partial class Enemy : CharacterBody2D
         _healthBarFill = GetNode<Sprite2D>("Health_Bar/Fill");
 
         //simple back and forth patrol
-        _patrolPointA = GlobalPosition;
-        _patrolPointB = GlobalPosition + new Vector2(200, 0);
+        _patrolPointA  = GlobalPosition;
+        _patrolPointB  = GlobalPosition + new Vector2(200, 0);
         _currentTarget = _patrolPointB;
     }
 
@@ -96,10 +109,8 @@ public partial class Enemy : CharacterBody2D
         Vector2 direction = (_currentTarget - GlobalPosition).Normalized();
         Velocity = direction * Speed;
 
-        if (GlobalPosition.DistanceTo(_currentTarget) < 10f)
-        {
+        if (GlobalPosition.DistanceTo(_currentTarget) < _patrolSwitchThreshold)
             _currentTarget = _currentTarget == _patrolPointA ? _patrolPointB : _patrolPointA;
-        }
     }
 
     /// <summary>
@@ -118,7 +129,7 @@ public partial class Enemy : CharacterBody2D
         }
 
         Vector2 direction = (_player.GlobalPosition - GlobalPosition).Normalized();
-        Velocity = direction * ChaseSpeed;
+        Velocity          = direction * ChaseSpeed;
     }
 
     private bool HasLineOfSight()
@@ -127,13 +138,10 @@ public partial class Enemy : CharacterBody2D
 
         var spaceState = GetWorld2D().DirectSpaceState;
 
-        var query = PhysicsRayQueryParameters2D.Create(
-            GlobalPosition,
-            _player.GlobalPosition
-            );
+        var query = PhysicsRayQueryParameters2D.Create(GlobalPosition, _player.GlobalPosition );
 
-        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
-        query.CollideWithAreas = false;
+        query.Exclude           = new Godot.Collections.Array<Rid> { GetRid() };
+        query.CollideWithAreas  = false;
         query.CollideWithBodies = true;
 
         var result = spaceState.IntersectRay(query);
@@ -149,7 +157,7 @@ public partial class Enemy : CharacterBody2D
     private void EnterAttackState()
     {
         _currentState = State.Attack;
-        Velocity = Vector2.Zero;
+        Velocity      = Vector2.Zero;
 
         _isWindingUp = true;
         _windupTimer = WindUpTime;
@@ -214,21 +222,19 @@ public partial class Enemy : CharacterBody2D
             _fireCooldown = FireRate;
 
             if (_shotsRemaining <= 0)
-            {
                 _reloadTimer = ReloadTime;
-            }
         }
     }
 
     private void Shoot()
     {
-        Vector2 origin = GlobalPosition;
+        Vector2 origin    = GlobalPosition;
         Vector2 direction = (_player.GlobalPosition - origin).Normalized();
-        Vector2 endPoint = origin + direction * MaxShootDistance;
+        Vector2 endPoint  = origin + direction * MaxShootDistance;
 
         var spaceState = GetWorld2D().DirectSpaceState;
-        var query = PhysicsRayQueryParameters2D.Create(origin, endPoint);
-        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+        var query      = PhysicsRayQueryParameters2D.Create(origin, endPoint);
+        query.Exclude  = new Godot.Collections.Array<Rid> { GetRid() };
 
         var result = spaceState.IntersectRay(query);
 
@@ -237,9 +243,7 @@ public partial class Enemy : CharacterBody2D
             Node collider = result["collider"].As<Node>();
 
             if (collider.HasMethod("TakeDamage"))
-            {
                 collider.Call("TakeDamage", Damage);
-            }
         }
     }
 
@@ -249,7 +253,7 @@ public partial class Enemy : CharacterBody2D
     private void Die()
     {
         _currentState = State.Dead;
-        Velocity = Vector2.Zero;
+        Velocity      = Vector2.Zero;
         QueueFree();
     }
 
@@ -258,10 +262,9 @@ public partial class Enemy : CharacterBody2D
         if (_player == null) return;
 
         float distance = GlobalPosition.DistanceTo(_player.GlobalPosition);
+
         if (distance < DetectionRadius)
-        {
             _currentState = State.Chase;
-        }
     }
 
     private void CheckLosePlayer()
@@ -269,10 +272,9 @@ public partial class Enemy : CharacterBody2D
         if (_player == null) return;
 
         float distance = GlobalPosition.DistanceTo(_player.GlobalPosition);
-        if (distance > DetectionRadius * 1.5f)
-        {
+
+        if (distance > DetectionRadius * _detectionModifier)                //Might have the change some variable names here in the future
             _currentState = State.Patrol;
-        }
     }
 
     /// <summary>
@@ -287,25 +289,24 @@ public partial class Enemy : CharacterBody2D
         GD.Print($"Entity took {amount} damage");
         _health -= amount;
 
-        float ratio = (float)_health / MaxHealth;
-        _healthBarFill.Scale = new Vector2(ratio, 0.01f);
+        float ratio          = (float)_health / MaxHealth;
+        _healthBarFill.Scale = new Vector2(ratio, _healthBarHeight);
 
-        _sprite.Modulate = new Color(1, 0.5f, 0.5f);                        // Flash Red
-        await ToSignal(GetTree().CreateTimer(0.2f), "timeout");
+        
+        _sprite.Modulate = Colors.Red;                                             //Flash Red        
+        await ToSignal(GetTree().CreateTimer( _damageFlashDuration ), "timeout");
         _sprite.Modulate = Colors.White;
 
         GD.Print($"Entity health: {_health}/{MaxHealth}");
 
         if (_health <= 0)
-        {
             Die();
-        }
     }
 
 
     private void RotateSpriteTowardsVelocity(float delta)
     {
-        float targetAngle = Velocity.Angle() + SPRITE_ROTATION_OFFSET;
+        float targetAngle = Velocity.Angle() + _spriteRotationOffset;
         float newAngle = Mathf.LerpAngle(
             _sprite.Rotation,
             targetAngle,

@@ -4,71 +4,69 @@ using System.Threading.Tasks;
 
 public partial class Player : CharacterBody2D
 {
-	// Node references
-	private Area2D _pickupArea;
-	private Sprite2D _sprite;
+    // Node references
+    private Area2D _pickupArea;
+    private Sprite2D _sprite;
     private Marker2D _muzzle;
     private AnimatedSprite2D _weaponSprite;
     private Sprite2D _healthBarFill;
 
     // Export variables
-    [Export] public float SPEED = 300.0f;                         //Movement variables
-    [Export] public float ACCELERATION = 2000.0f;
-    [Export] public float FRICTION = 250.0f;
+    [Export] public float Speed        = 300.0f;            //Movement variables
+    [Export] public float Acceleration = 2000.0f;
+    [Export] public float Friction     = 250.0f;
 
-    [Export] public float ROLL_SPEED = 600.0f;                    //Roll variables
-    [Export] public float ROLL_DURATION = 0.25f;
-    [Export] public float ROLL_COOLDOWN = 0.5f;
+    [Export] public float RollSpeed    = 600.0f;            //Roll variables
+    [Export] public float RollDuration = 0.25f;
+    [Export] public float RollCoolDown = 0.5f;
 
-    [Export] public float FIRE_RATE = 0.5f;                       //Attack variables
-    [Export] public int DAMAGE = 10;
-    [Export] public float RECOIL_FORCE = 120f;
-    [Export] public float MAX_FIRE_DISTANCE = 1000f;
+    [Export] public float FireRate        = 0.5f;           //Attack variables
+    [Export] public int Damage            = 10;
+    [Export] public float RecoilForce     = 120f;
+    [Export] public float MaxFireDistance = 1000f;
 
-    [Export] public int MAX_HEALTH = 100;                      //Health variables
+    [Export] public int MaxHealth = 100;                    //Health variables
     private int _currentHealth;
 
-    private const float SPRITE_ROTATION_OFFSET = -90.0f;
+    private const float _spriteRotationOffset = -90.0f;
 
     private Vector2 _velocity = Vector2.Zero;
 
-    private bool _isRolling = false;
+    private bool _isRolling = false;                        //Roll variables
     private float _rollTimer = 0.0f;
     private float _rollCooldownTimer = 0.0f;
     private Vector2 _rollDirection = Vector2.Zero;
 
-    private float _attackTimer = 0.0f;
-	private float _attackCooldownTimer = 0.0f;
+    private float _attackTimer = 0.0f;                      //Attack variables
+    private float _attackCooldownTimer = 0.0f;
 
     private float _fireCooldown = 0f;
 
     public override void _Ready()
-	{
-		_pickupArea = GetNode<Area2D>("PickupArea");
-		_sprite = GetNode<Sprite2D>("Sprite2D");
+    {
+        _pickupArea = GetNode<Area2D>("PickupArea");
+        _sprite = GetNode<Sprite2D>("Sprite2D");
         _muzzle = GetNode<Marker2D>("Sprite2D/Muzzle");
         _weaponSprite = GetNode<AnimatedSprite2D>("Sprite2D/WeaponSprite");
         _healthBarFill = GetNode<Sprite2D>("Health_Bar/Fill");
 
         AddToGroup("player");
 
-        _currentHealth = MAX_HEALTH;
+        _currentHealth = MaxHealth;
     }
 
-	public override void _PhysicsProcess(double delta)
-	{
-		float d = (float)delta;
+    public override void _PhysicsProcess(double delta)
+    {
+        float d = (float)delta;
         HandleRollTimers(d);
         _fireCooldown -= (float)delta;
 
         if (Input.IsActionPressed("attack"))
-        {
             Fire();
-        }
 
         if (_isRolling)
         {
-            Velocity = _rollDirection * ROLL_SPEED;
+            Velocity = _rollDirection * RollSpeed;
             MoveAndSlide();
             return;
         }
@@ -76,13 +74,9 @@ public partial class Player : CharacterBody2D
         Vector2 inputDir = GetInputVector();
 
         if (inputDir != Vector2.Zero)
-        {
-            _velocity = _velocity.MoveToward(inputDir * SPEED, ACCELERATION * d);
-        }
+            _velocity = _velocity.MoveToward(inputDir * Speed, Acceleration * d);
         else
-        {
-            _velocity = _velocity.MoveToward(Vector2.Zero, FRICTION * d);
-        }
+            _velocity = _velocity.MoveToward(Vector2.Zero, Friction * d);
 
         Velocity = _velocity;
         MoveAndSlide();
@@ -97,7 +91,7 @@ public partial class Player : CharacterBody2D
     /// </summary>
     /// <returns>inputDir</returns>
     private Vector2 GetInputVector()
-	{
+    {
         Vector2 inputDir = Vector2.Zero;
         inputDir.X = Input.GetActionStrength("ui_right") - Input.GetActionStrength("ui_left");
         inputDir.Y = Input.GetActionStrength("ui_down") - Input.GetActionStrength("ui_up");
@@ -108,18 +102,18 @@ public partial class Player : CharacterBody2D
     ///		Rotate sprite to face mouse direction
     /// </summary>
     private void RotateTowardsMouse()
-	{
+    {
         Vector2 mousePos = GetGlobalMousePosition();
         Vector2 toMouse = mousePos - _sprite.GlobalPosition;
         if (toMouse != Vector2.Zero)
         {
             float angleDeg = MathF.Atan2(toMouse.Y, toMouse.X) * (180.0f / MathF.PI);
-            _sprite.GlobalRotationDegrees = angleDeg + SPRITE_ROTATION_OFFSET;
+            _sprite.GlobalRotationDegrees = angleDeg + _spriteRotationOffset;
         }
     }
 
-	private void StartRoll(Vector2 inputDir)
-	{
+    private void StartRoll(Vector2 inputDir)
+    {
         // Start roll
         if (Input.IsActionJustPressed("ui_accept") && !_isRolling && _rollCooldownTimer == 0.0f)
         {
@@ -127,7 +121,7 @@ public partial class Player : CharacterBody2D
             {
                 _isRolling = true;
                 _velocity = inputDir;
-                _rollTimer = ROLL_DURATION;
+                _rollTimer = RollDuration;
             }
         }
     }
@@ -143,7 +137,7 @@ public partial class Player : CharacterBody2D
             if (_rollTimer <= 0f)
             {
                 _isRolling = false;
-                _rollCooldownTimer = ROLL_COOLDOWN;
+                _rollCooldownTimer = RollCoolDown;
             }
         }
     }
@@ -157,7 +151,7 @@ public partial class Player : CharacterBody2D
         Vector2 target = GetGlobalMousePosition();
 
         Vector2 direction = (target - origin).Normalized();
-        Vector2 endPoint = origin + direction * MAX_FIRE_DISTANCE;
+        Vector2 endPoint = origin + direction * MaxFireDistance;
 
         var spaceState = GetWorld2D().DirectSpaceState;
 
@@ -174,9 +168,7 @@ public partial class Player : CharacterBody2D
             Node collider = result["collider"].As<Node>();
 
             if (collider.HasMethod("TakeDamage"))
-            {
-                collider.Call("TakeDamage", DAMAGE);           
-            }
+                collider.Call("TakeDamage", Damage);
         }
 
         // Fire animation and recoil (Is this even working?)
@@ -185,12 +177,12 @@ public partial class Player : CharacterBody2D
         _weaponSprite.Play("default");
 
         ApplyRecoil(direction);
-        _fireCooldown = FIRE_RATE;
+        _fireCooldown = FireRate;
     }
-   
+
     private void ApplyRecoil(Vector2 direction)
     {
-        Velocity -= direction * RECOIL_FORCE;
+        Velocity -= direction * RecoilForce;
     }
 
     /// <summary>
@@ -198,24 +190,22 @@ public partial class Player : CharacterBody2D
     /// </summary>
     /// <param name="amount"></param>
 	public async void TakeDamage(int amount)
-	{
-		GD.Print($"Player took {amount} damage");
+    {
+        GD.Print($"Player took {amount} damage");
 
         _currentHealth -= amount;
 
-        float ratio = (float)_currentHealth / MAX_HEALTH;
+        float ratio = (float)_currentHealth / MaxHealth;
         _healthBarFill.Scale = new Vector2(ratio, 0.01f);
 
         _sprite.Modulate = new Color(1, 0.5f, 0.5f);                        // Flash Red
         await ToSignal(GetTree().CreateTimer(0.2f), "timeout");
         _sprite.Modulate = Colors.White;
 
-        GD.Print($"Player health: {_currentHealth}/{MAX_HEALTH}");
+        GD.Print($"Player health: {_currentHealth}/{MaxHealth}");
 
         if (_currentHealth <= 0)
-        {
-            Die(); 
-        }
+            Die();
     }
 
     private void Die()
